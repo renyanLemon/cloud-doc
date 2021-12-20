@@ -5,8 +5,7 @@ let mainWindow
 
 app.on('ready', () => {
   mainWindow = new BrowserWindow({
-    width: 1024,
-    height: 680,
+    fullscreen: true,
     webPreferences: {
       // nodeIntegration true 可以使用nodejs api
       nodeIntegration: true,
