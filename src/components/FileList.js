@@ -1,5 +1,6 @@
-import React, { useRef, useState } from "react"
+import React, { useRef, useState, useEffect } from "react"
 import PropTypes from 'prop-types'
+import useKeyPress from "../hooks/useKeyPress"
 
 const data = [{
   name: '文档名字1',
@@ -19,7 +20,20 @@ const data = [{
 }]
 
 const FileList = () => {
+
   const [ currentIdEdit, setCurrentIdEdit ] = useState('')
+
+  const enterPressed = useKeyPress(13)
+  const escPressed = useKeyPress(27)
+
+  useEffect(() => {
+    if(enterPressed) {
+      setCurrentIdEdit('')
+    }
+    if(escPressed) {
+      setCurrentIdEdit('')
+    }
+  })
 
   return (
     <div className="list-group">
@@ -33,7 +47,7 @@ const FileList = () => {
               setCurrentIdEdit('')
             }}
             >保存</button>
-            <button className="btn btn-secondary btn-sm m-2"
+            <button className="btn btn-outline-success btn-sm m-2"
             onClick={() => {
               setCurrentIdEdit('')
             }}
@@ -46,7 +60,7 @@ const FileList = () => {
             onClick={() => {
               setCurrentIdEdit(item.id)
             }}>编辑</button>
-            <button className="btn btn-secondary btn-sm m-2"
+            <button className="btn btn-outline-info btn-sm m-2"
             >删除</button>
           </div>
         )

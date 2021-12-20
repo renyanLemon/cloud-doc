@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  height: 100%;
 }
 
 .App-logo {
@@ -35,4 +36,18 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.left-panel-box {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: aquamarine;
+}
+.left-panel-content {
+  flex: 1;
+}
+.left-panel-footer {
+  
+  height: 80px;
 }

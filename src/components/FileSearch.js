@@ -1,26 +1,27 @@
 import React, { useRef, useState, useEffect } from "react"
 import PropTypes from 'prop-types'
+import useKeyPress from "../hooks/useKeyPress"
 
 const FileSearch = (props) => {
+
   const [ value, setValue ] = useState('')
+
+  const enterPressed = useKeyPress(13)
+  const escPressed = useKeyPress(27)
+
   const searchRef = useRef(null)
+
   useEffect(() => {
     searchRef.current.focus()
   }, [])
 
   useEffect(() => {
-    const handleInputEvent = (event) => {
-      const { keyCode } = event
-      if(keyCode === 13) {
-        props.onFileSearch(value)
-      }else if(keyCode === 27) {
-        searchRef.current.value = ''
-        setValue('')
-      }
+    if(enterPressed) {
+      props.onFileSearch(value)
     }
-    document.addEventListener('keyup', handleInputEvent)
-    return () => {
-      document.removeEventListener('keyup',handleInputEvent)
+    if(escPressed) {
+      searchRef.current.value = ''
+      setValue('')
     }
   })
 
@@ -40,7 +41,7 @@ const FileSearch = (props) => {
             props.onFileSearch(value)
           }}>搜索</button>
         <button 
-        className="btn btn-default btn-sm bg-white"
+        className="btn btn-outline-primary btn-sm bg-white"
         onClick={() => {
           searchRef.current.value = ''
           setValue('')
