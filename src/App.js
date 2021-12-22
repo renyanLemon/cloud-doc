@@ -2,6 +2,27 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import { FileSearch } from './components/FileSearch'
 import { FileList } from './components/FileList'
+import { TabList } from './components/TabList'
+
+import SimpleMDE from "react-simplemde-editor";
+import "easymde/dist/easymde.min.css";
+
+const data = [{
+  name: '文档名字1',
+  id: 1,
+  body: '简介1。。。',
+  createdAt: '1'
+},{
+  name: '文档名字2',
+  id: 2,
+  body: '## 简介2。。。',
+  createdAt: '2'
+},{
+  name: '文档名字3',
+  id: 3,
+  body: '简介3。。。',
+  createdAt: '3'
+}]
 
 function App() {
   return (
@@ -25,7 +46,25 @@ function App() {
         </div>
 
         <div className='col-8 right-panel'>
-          <h1>this is the right</h1>
+          <TabList
+            files={data}
+            activeId={1}
+            unsaveIds={[2]}
+            onTabClick={(id)=>{
+              console.log(id)
+            }}
+            onCloseTab={(id)=>{
+              console.log('close',id)
+            }}
+          >
+          </TabList>
+          <SimpleMDE
+            value={data[1].body}
+            onChange={(value) => {console.log(value)}}
+            options={{
+              minHeight: '600px'
+            }}
+          />
         </div>
 
     </div>
