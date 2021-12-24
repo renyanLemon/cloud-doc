@@ -41,10 +41,11 @@ const FileSearch = (props) => {
             props.onFileSearch(value)
           }}>搜索</button>
         <button 
-        className="btn btn-outline-primary btn-sm bg-white"
+        className="btn btn-default btn-sm bg-white"
         onClick={() => {
           searchRef.current.value = ''
           setValue('')
+          props.onFileSearch('')
         }}>清空</button>
       </div>
     </div>

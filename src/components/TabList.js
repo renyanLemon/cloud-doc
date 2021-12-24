@@ -24,9 +24,9 @@ const TabList = ({ files, activeId, unsaveIds, onTabClick, onCloseTab }) => {
                 href="#"
                 onClick={(e)=>{
                   e.preventDefault();
-                  onTabClick(file.id)
+                  onTabClick(file.id, 999)
                 }}>
-                  {file.name}
+                  {file.title}
                 <span className="close-icon icon"
                       onClick={(e) => {
                         e.stopPropagation();
