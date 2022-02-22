@@ -4,38 +4,34 @@ import useKeyPress from "../hooks/useKeyPress"
 
 import './FileList.scss'
 
-const FileList = ({ files, onFileClick, onFileDelete, onSaveEdit}) => {
+const FileList = ({ files, onFileClick, onFileDelete, onSaveEdit, onFileCancel, onFileEdit}) => {
 
-  const [ currentIdEdit, setCurrentIdEdit ] = useState('')
-
+  const [ changeList, setChangeList ] = useState({})
   const enterPressed = useKeyPress(13)
   const escPressed = useKeyPress(27)
-
-  useEffect(() => {
-    if(enterPressed) {
-      setCurrentIdEdit('')
-    }
-    if(escPressed) {
-      setCurrentIdEdit('')
-    }
-  })
 
   return (
     <div className="list-group">
       { files.map((item) => {
         return (
-          currentIdEdit === item.id ? 
+          item.isNew || item.isUpdate ? 
           <div key={item.id} className="list-group-item">
-            <input defaultValue={item.title}></input>
+            <input defaultValue={item.title} 
+            onChange={(event) => {
+              let newChangeList = {...changeList}
+              newChangeList[item.id] = event.target.value
+              setChangeList(newChangeList)
+              // onUpdateFileName(item.id, event.target.value)
+            }} 
+            placeholder="请输入文件名称"></input>
             <button className="btn btn-success btn-sm m-2"
             onClick={() => {
-              onSaveEdit(item.id, 999)
-              setCurrentIdEdit('')
+              onSaveEdit(item.id, changeList[item.id])
             }}
             >保存</button>
             <button className="btn btn-default btn-sm m-2"
             onClick={() => {
-              setCurrentIdEdit('')
+              onFileCancel(item)
             }}
             >取消</button>
           </div> :
@@ -47,7 +43,7 @@ const FileList = ({ files, onFileClick, onFileDelete, onSaveEdit}) => {
             }}>{item.title}</span>
             <button className="btn btn-info btn-sm m-2" 
             onClick={() => {
-              setCurrentIdEdit(item.id)
+              onFileEdit(item.id)
             }}>编辑</button>
             <button className="btn btn-default btn-sm m-2"
             onClick={() => {

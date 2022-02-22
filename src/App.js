@@ -4,37 +4,30 @@ import { FileSearch } from './components/FileSearch'
 import { FileList } from './components/FileList'
 import { TabList } from './components/TabList'
 import SimpleMDE from "react-simplemde-editor";
+import { v4 as uuidv4 } from 'uuid';
+import fileHelper from './utils/fileHelper';
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import "easymde/dist/easymde.min.css";
 
-const data = [{
-  title: '文档名字11',
-  id: 1,
-  body: '简介11。。。',
-  createdAt: '11'
-},{
-  title: '文档名字22',
-  id: 2,
-  body: '## 简介22。。。',
-  createdAt: '22'
-},{
-  title: '文档名字3',
-  id: 3,
-  body: '简介3。。。',
-  createdAt: '3'
-}]
+const { join } = window.require('path')
+const { BrowserWindow, app } = window.require('@electron/remote')
+
+const Store = window.require('electron-store')
+const fileStore = new Store({'name': 'Files Data'})
 
 function App() {
-
-  const [ files, setFiles ] = useState(data)
+  // fileStore.set('files', [])
+  const fileLists = fileStore.get('files') || []
+  const [ files, setFiles ] = useState(fileLists)
   const [ activeFileID, setActiveFileID ] = useState('')
   const [ openedFileIDs, setOpenedFileIDs ] = useState([])
   const [ unsavedFileIDs, setUnsavedFileIDs ] = useState([])
   const [ searchedFiles, setSearchedFiles ] = useState([])
+  const savedLocation = app.getPath('documents')
 
-  // 能计算出来，就不要放 state 里面
+  //能计算出来，就不要放 state 里面
   //计算所有打开的文件
   const openedFiles = openedFileIDs.map( openID => {
     return files.find(file => file.id === openID)
@@ -51,6 +44,22 @@ function App() {
     if(!openedFileIDs.includes(fileID)) {
       setOpenedFileIDs([...openedFileIDs, fileID])
     }
+  }
+
+  //新建文件
+  const createNewFile = () => {
+    const newFiles = [
+      ...files,
+      {
+        id: uuidv4(),
+        title: '',
+        body: '## 请输入 Markdown',
+        createdAt: new Date().getTime(),
+        isNew: true,
+        isUpdate: false,
+      }
+    ]
+    setFiles(newFiles)
   }
 
   const tabClick = (fileID) => {
@@ -81,24 +90,88 @@ function App() {
   }
 
   const deleteFile = (id) => {
-    const newFiles = files.filter(file => file.id !== id)
-    setFiles(newFiles)
+    console.log(777,files)
+    const newFiles = files.reduce((result, item) => {
+      if(item.id === id) {
+        fileHelper.deleteFile(item.path).then(() => {})
+        console.log(9998,result,item)
+        return result || []
+      }else {
+        console.log(999,result,item)
+        return result.push(item)
+      }
+    }, [])
+    // setFiles(newFiles)
+    // fileStore.set('files', newFiles)
+    // console.log(999, fileStore.get('files'));
     //如果当前删除的文件已经打开，删除打开的文件
-    tabClose(id)
+    // tabClose(id)
   }
 
-  const updateFileName = ( id, title ) => {
+  const cancelFile = (param) => {
+    let newFiles
+    if(param.isUpdate) {
+      newFiles = files.map(item => {
+        if(item.id === param.id) {
+          item.isUpdate = false
+        }
+        return item
+      })
+    }else {
+      newFiles = files.filter(file => file.id !== param.id)
+    }
+    setFiles(newFiles)
+  }
+
+  const fileEdit = ( id ) => {
     const newFiles = files.map( file => {
       if(file.id === id) {
-        file.title = title
+        file.isUpdate = true
       }
       return file
     })
     setFiles(newFiles)
   }
 
+  const saveFileName = (id, title) => {
+    const objFile = {
+      id: id,
+      title: title,
+      path: join(savedLocation, `${title}.md`)
+    }
+    let storeFiles = fileStore.get('files')
+    const newFiles = files.map( file => {
+      if(file.id === id) {
+        if(file.isNew) {
+          file.isNew = false
+          fileHelper.writeFile(join(savedLocation, `${title}.md`), file.body).then(() => {
+            fileStore.set('files', [...storeFiles, objFile])
+            setFiles([...storeFiles, objFile])
+            console.log(888, fileStore.get('files'));
+          })
+        }else {
+          file.isUpdate = false
+          fileHelper.renameFile(join(savedLocation, `${file.title}.md`), join(savedLocation, `${title}.md`)).then(() => {
+            const newFiles = storeFiles.map(item => {
+              if(item.id === id) {
+                item = {...objFile}
+              }
+              return item
+            })
+            fileStore.set('files', newFiles)
+            setFiles(newFiles)
+            console.log(999, fileStore.get('files'));
+          })
+        }
+      }
+      return file
+    })
+    
+  }
+
   const fileSearch = (keyword) => {
     const newFiles = files.filter( file => file.title.includes(keyword))
+    console.log(888111, keyword, files, newFiles)
     setSearchedFiles(newFiles)
   }
 
@@ -120,20 +193,17 @@ function App() {
             files={fileListArr}
             onFileClick={fileClick}
             onFileDelete={deleteFile}
-            onSaveEdit={updateFileName}
+            onSaveEdit={saveFileName}
+            onFileCancel={cancelFile}
+            onFileEdit={fileEdit}
             ></FileList>
 
           </div>
           <div className='left-panel-footer'>
-            <button className='m-2 btn btn-dark'>新建</button>
+            <button 
+            onClick={createNewFile}
+            className='m-2 btn btn-dark'>新建</button>
             <button className='m-2 btn btn-dark'>导入</button>
-            <button type="button" 
-              class="m-2 btn btn-dark" 
-              data-bs-toggle="tooltip" 
-              data-bs-placement="top" 
-              title="将本地md文件批量转换成html">
-                批量转换
-              </button>
           </div>
         </div>
 

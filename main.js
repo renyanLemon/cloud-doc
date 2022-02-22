@@ -1,6 +1,9 @@
 const { app, BrowserWindow } = require('electron')
 const isDev = require('electron-is-dev')
 
+const remote = require('@electron/remote/main')
+remote.initialize()
+
 let mainWindow
 
 app.on('ready', () => {
@@ -17,6 +20,12 @@ app.on('ready', () => {
       webviewTag: true
     }
   })
+
   const urlLocation = isDev ? 'http://localhost:3000' : ''
   mainWindow.loadURL(urlLocation)
+
+  // 允许窗口的 webcontents 访问
+  remote.enable(mainWindow.webContents)
+
+  mainWindow.webContents.openDevTools({mode:'bottom'})
 })
